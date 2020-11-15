@@ -38,16 +38,18 @@ def draw_hyperparameters(space_dict: dict) -> dict:
     return hyper_dict
 
 
-def create_hyperdicts_list(num_draws: int = 10) -> List[dict]:
+def create_hyperdicts_list(space, num_draws: int = 10) -> List[dict]:
+    assert num_draws > 0, "cannot draw less then 1 hyper_dicts"
+
     hyperdicts_list = []
 
     for draw in range(num_draws):
         logging.info(f"Validation run: {draw}")
 
-        hyper_dict = draw_hyperparameters(STANDARD_SPACE)
+        hyper_dict = draw_hyperparameters(space)
 
         while hyper_dict in hyperdicts_list:
-            hyper_dict = draw_hyperparameters(STANDARD_SPACE)
+            hyper_dict = draw_hyperparameters(space)
         hyperdicts_list.append(hyper_dict)
 
     return hyperdicts_list

@@ -14,15 +14,15 @@ def cross_validate(model_name: str,
                    hyper_dict: dict,
                    label_dict: dict,
                    df_generator: Generator,
-                   load_columns: Tuple[str, str] = ("sentence1", "sentence2"),
-                   target_column: str = "label") -> dict:
+                   load_columns: Tuple[str, str],
+                   target_column: str) -> dict:
 
     assert type(hyper_dict) == dict
 
     logging.info("Starting validation for hyperparameters:")
     log_dict("hyperparameters", hyper_dict)
 
-    reader = DataReader(model_name, hyper_dict)
+    reader = DataReader(model_name, hyper_dict, label_dict)
 
     result_dict_list = []
 
@@ -30,8 +30,8 @@ def cross_validate(model_name: str,
         classifier = LabelClassifier(model_name, hyper_dict, label_dict)
         steps_per_epoch = train_df.shape[0] // hyper_dict["batch_size"]
 
-        t_dataset = reader.read_data(train_df, load_columns)
-        v_dataset = reader.read_data(validation_df, load_columns, target_column)
+        t_dataset = reader.read_data(train_df, load_columns, target_column)
+        v_dataset = reader.read_data(validation_df, load_columns)
 
         classifier.train_model(t_dataset, steps_per_epoch)
         predictions = classifier.eval_model(v_dataset)
@@ -54,6 +54,8 @@ def search_parameter_list(model_name: str,
                           hyperdicts_list: List[dict],
                           label_dict: dict,
                           df_generator: Generator,
+                          load_columns: Tuple[str, str],
+                          target_column: str,
                           output_directory: str,
                           identifier: float) -> None:
 
@@ -66,7 +68,12 @@ def search_parameter_list(model_name: str,
             os.makedirs(directory)
 
     for i, hyper_dict in enumerate(hyperdicts_list):
-        averaged_result_dict = cross_validate(model_name, hyper_dict, label_dict, df_generator)
+        averaged_result_dict = cross_validate(model_name=model_name,
+                                              hyper_dict=hyper_dict,
+                                              label_dict=label_dict,
+                                              df_generator=df_generator,
+                                              load_columns=load_columns,
+                                              target_column=target_column)
 
         logging.info("Average result for one hyperparameter setting")
         log_dict("averaged results", averaged_result_dict)

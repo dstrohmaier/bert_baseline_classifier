@@ -10,10 +10,14 @@ from torch.utils.data import TensorDataset
 class DataReader(object):
     def __init__(self,
                  model_name: str,
-                 hyper_dict: dict):
+                 hyper_dict: dict,
+                 label_dict: dict,
+                 label_type=torch.long):
 
         self.hyper_dict = hyper_dict
+        self.label_dict = label_dict
         self.tokenizer = BertTokenizer.from_pretrained(model_name, do_lower_case=True)
+        self.label_type = label_type  # needs to be torch.float for regression
 
     def tokenize_encode(self, text: str) -> List[int]:
         tokens = self.tokenizer.tokenize(text)
@@ -78,7 +82,8 @@ class DataReader(object):
             f"Wrong type: {type(attention_masks)} for attention_masks. Should be Tensor"
 
         if target_column:
-            labels = torch.tensor(df[target_column].values, dtype=torch.float)
+            labels = [self.label_dict[label] for label in df.label.values]
+            labels = torch.tensor(labels, dtype=self.label_type)
             tensor_data = TensorDataset(input_ids, token_type_ids, attention_masks, labels)
         else:
             tensor_data = TensorDataset(input_ids, token_type_ids, attention_masks)
@@ -88,17 +93,12 @@ class DataReader(object):
         return tensor_data
 
 
-def create_df_generator(path: str, names: List[str], num_splits: int=5):
+def create_df_generator(path, names, num_splits=5):
     def load_df_tuple():
-        train_dfs = []
-        valid_dfs = []
-
         for i in range(num_splits):
-            train_dfs.append(pd.read_csv(path + f"{i}_train.tsv",
-                                         delimiter='\t', encoding="UTF-8", names=names, header=None))
-            valid_dfs.append(pd.read_csv(path + f"{i}_valid.tsv",
-                                         delimiter='\t', encoding="UTF-8", names=names, header=None))
+            train_df = pd.read_csv(path + f"{i}_train.tsv", delimiter='\t', encoding="UTF-8", names=names, header=None)
+            valid_df = pd.read_csv(path + f"{i}_valid.tsv", delimiter='\t', encoding="UTF-8", names=names, header=None)
 
-            yield train_dfs, valid_dfs
+            yield train_df, valid_df
 
     return load_df_tuple()
