@@ -5,7 +5,7 @@ import pandas as pd
 from typing import Tuple
 
 
-def split_df(df: pd.DataFrame, column: str = "sentence1",  num_splits: int = 5) -> Tuple[list, list]:
+def split_df(df: pd.DataFrame, column: str, num_splits: int = 5) -> Tuple[list, list]:
     unique_words = df[column].unique()
     np.random.shuffle(unique_words)
     word_splits = np.array_split(unique_words, num_splits)
@@ -19,11 +19,11 @@ def split_df(df: pd.DataFrame, column: str = "sentence1",  num_splits: int = 5) 
     return train_dfs, valid_dfs
 
 
-def split_and_save(data: pd.DataFrame, output_directory: str):
+def split_and_save(data: pd.DataFrame, column: str, output_directory: str):
     if not os.path.isdir(output_directory):
         os.makedirs(output_directory)
 
-    train_dfs, valid_dfs = split_df(data)
+    train_dfs, valid_dfs = split_df(data, column)
 
     for counter, (t_df, v_df) in enumerate(zip(train_dfs, valid_dfs)):
 
@@ -36,4 +36,4 @@ def split_and_save(data: pd.DataFrame, output_directory: str):
 
 if __name__ == '__main__':
     single_df = pd.read_csv("data/train.tsv", delimiter='\t', encoding="UTF-8")
-    split_and_save(single_df, "data/split/")
+    split_and_save(single_df, column="sentence1", output_directory="data/split/")

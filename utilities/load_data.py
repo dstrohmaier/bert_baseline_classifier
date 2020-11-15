@@ -15,7 +15,7 @@ class DataReader(object):
         self.hyper_dict = hyper_dict
         self.tokenizer = BertTokenizer.from_pretrained(model_name, do_lower_case=True)
 
-    def tokenize_encode(self, text: str) -> List[int, ...]:
+    def tokenize_encode(self, text: str) -> List[int]:
         tokens = self.tokenizer.tokenize(text)
         encoded_tokens = self.tokenizer.convert_tokens_to_ids(tokens)
         return encoded_tokens
@@ -86,3 +86,19 @@ class DataReader(object):
         assert df.shape[0] == input_ids.shape[0], "length of DataFrame and length of input do not match"
 
         return tensor_data
+
+
+def create_df_generator(path: str, names: List[str], num_splits: int=5):
+    def load_df_tuple():
+        train_dfs = []
+        valid_dfs = []
+
+        for i in range(num_splits):
+            train_dfs.append(pd.read_csv(path + f"{i}_train.tsv",
+                                         delimiter='\t', encoding="UTF-8", names=names, header=None))
+            valid_dfs.append(pd.read_csv(path + f"{i}_valid.tsv",
+                                         delimiter='\t', encoding="UTF-8", names=names, header=None))
+
+            yield train_dfs, valid_dfs
+
+    return load_df_tuple()

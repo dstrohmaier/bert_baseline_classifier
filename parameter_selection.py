@@ -38,7 +38,7 @@ def draw_hyperparameters(space_dict: dict) -> dict:
     return hyper_dict
 
 
-def create_hyperdicts_list(num_draws: int = 10) -> List[dict, ...]:
+def create_hyperdicts_list(num_draws: int = 10) -> List[dict]:
     hyperdicts_list = []
 
     for draw in range(num_draws):

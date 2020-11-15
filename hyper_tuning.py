@@ -51,7 +51,7 @@ def cross_validate(model_name: str,
 
 
 def search_parameter_list(model_name: str,
-                          hyperdicts_list: List[dict, ...],
+                          hyperdicts_list: List[dict],
                           label_dict: dict,
                           df_generator: Generator,
                           output_directory: str,
