@@ -102,21 +102,12 @@ class LabelClassifier(BaseClassifier):
 
         self.inv_label_dict = {value: key for key, value in self.label_dict.items()}
 
-    def convert_labels(self, label_tensor: torch.Tensor):
-        converted_labels = []
-        base = [0] * len(self.label_dict)
-        for label in label_tensor:
-            converted_labels.append(base[:label] + [1] + base[label + 1:])
-
-        return torch.tensor(converted_labels, dtype=torch.float, device=self.device)
-
     def calculate_loss(self, logits: torch.Tensor, b_labels: torch.Tensor):
-        converted_labels = self.convert_labels(b_labels)
 
         loss_fct = torch.nn.CrossEntropyLoss()
         loss_fct.to(self.device)
         loss = loss_fct(
-            logits, converted_labels
+            logits, b_labels
         )
         return loss
 
@@ -131,6 +122,14 @@ class WeightedLabelClassifier(LabelClassifier):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         assert "pos_weight" in self.hyper_dict.keys(), "WeightedLabelClassifier called without weights."
+
+    def convert_labels(self, label_tensor: torch.Tensor):
+        converted_labels = []
+        base = [0] * len(self.label_dict)
+        for label in label_tensor:
+            converted_labels.append(base[:label] + [1] + base[label + 1:])
+
+        return torch.tensor(converted_labels, dtype=torch.float, device=self.device)
 
     def calculate_loss(self, logits: torch.Tensor, b_labels: torch.Tensor):
         pos_weight = torch.tensor(self.hyper_dict["pos_weight"], dtype=torch.long, device=self.device)
