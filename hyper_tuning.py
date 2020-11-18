@@ -13,7 +13,7 @@ from utilities.load_data import DataReader
 def cross_validate(model_name: str,
                    hyper_dict: dict,
                    label_dict: dict,
-                   df_generator: Generator,
+                   dfs_tuple: Tuple[Tuple, ...],
                    load_columns: Tuple[str, str],
                    target_column: str) -> dict:
 
@@ -26,7 +26,7 @@ def cross_validate(model_name: str,
 
     result_dict_list = []
 
-    for train_df, validation_df in df_generator:
+    for train_df, validation_df in dfs_tuple:
         classifier = LabelClassifier(model_name, hyper_dict, label_dict)
         steps_per_epoch = train_df.shape[0] // hyper_dict["batch_size"]
 
@@ -53,7 +53,7 @@ def cross_validate(model_name: str,
 def search_parameter_list(model_name: str,
                           hyperdicts_list: List[dict],
                           label_dict: dict,
-                          df_generator: Generator,
+                          dfs_tuple: Tuple[Tuple, ...],
                           load_columns: Tuple[str, str],
                           target_column: str,
                           output_directory: str,
@@ -71,7 +71,7 @@ def search_parameter_list(model_name: str,
         averaged_result_dict = cross_validate(model_name=model_name,
                                               hyper_dict=hyper_dict,
                                               label_dict=label_dict,
-                                              df_generator=df_generator,
+                                              dfs_tuple=dfs_tuple,
                                               load_columns=load_columns,
                                               target_column=target_column)
 

@@ -93,12 +93,22 @@ class DataReader(object):
         return tensor_data
 
 
-def create_df_generator(path, names, num_splits=5):
-    def load_df_tuple():
-        for i in range(num_splits):
-            train_df = pd.read_csv(path + f"{i}_train.tsv", delimiter='\t', encoding="UTF-8", names=names, header=None)
-            valid_df = pd.read_csv(path + f"{i}_valid.tsv", delimiter='\t', encoding="UTF-8", names=names, header=None)
+def create_dfs_tuple(path, names, num_splits=5):
+    train_dfs = []
+    valid_dfs = []
 
-            yield train_df, valid_df
+    for i in range(num_splits):
+        train_dfs.append(pd.read_csv(path + f"{i}_train.tsv",
+                                     delimiter='\t',
+                                     encoding="UTF-8",
+                                     names=names,
+                                     header=None,
+                                     keep_default_na=False))
+        valid_dfs.append(pd.read_csv(path + f"{i}_valid.tsv",
+                                     delimiter='\t',
+                                     encoding="UTF-8",
+                                     names=names,
+                                     header=None,
+                                     keep_default_na=False))
 
-    return load_df_tuple()
+    return tuple(train_dfs), tuple(valid_dfs)
