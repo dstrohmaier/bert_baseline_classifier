@@ -26,7 +26,7 @@ def cross_validate(model_name: str,
 
     result_dict_list = []
 
-    for train_df, validation_df in dfs_tuple:
+    for train_df, validation_df in zip(*dfs_tuple):
         classifier = LabelClassifier(model_name, hyper_dict, label_dict)
         steps_per_epoch = train_df.shape[0] // hyper_dict["batch_size"]
 
@@ -38,7 +38,7 @@ def cross_validate(model_name: str,
         pred_df = validation_df.assign(**{target_column: predictions})
 
         predicted_labels = pred_df[target_column].tolist()
-        correct_labels = pred_df[target_column].tolist()
+        correct_labels = validation_df[target_column].tolist()
 
         result_dict = evaluate_from_list(correct_labels, predicted_labels)
         logging.info("Preliminary result from one round in cross-validation")
